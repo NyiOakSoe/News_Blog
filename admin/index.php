@@ -8,6 +8,16 @@
   if($_SESSION['role']==0){
     header('location:../index.php');
   }
+  if(isset($_POST['search'])){
+    setcookie('search',$_POST['search'],time()+(3600*24),"/");
+    
+  }else{
+    if(empty($_GET['pageno'])){
+      unset($_COOKIE['search']);
+      setcookie('search',null,-1,'/');
+      
+    }
+  }
 
   include ('header.html');
 
@@ -20,7 +30,7 @@
         $numofrecs=2;
         $offset=($pageno -1) * $numofrecs;
   
-        if(empty($_POST['search'])){
+        if(empty($_POST['search']) && empty($_COOKIE['search'])){
           $stmt=$pdo->prepare("SELECT * FROM posts ");
           $stmt->execute();
           $row_result=$stmt->fetchAll();
@@ -30,15 +40,17 @@
           $stmt->execute();
           $result=$stmt->fetchAll();
       }else{
-
-          
+        if(isset($_POST['search'])){
           $search=$_POST['search'];
-          $stmt=$pdo->prepare("SELECT * FROM posts ");
+        }else{
+          $search=$_COOKIE['search'];
+        }
+          $stmt=$pdo->prepare("SELECT * FROM posts WHERE title LIKE '%$search%' ");
           $stmt->execute();
           $row_result=$stmt->fetchAll();
           $total_page=ceil(count($row_result) / $numofrecs);
   
-          $stmt=$pdo->prepare("SELECT * FROM posts WHERE title LIKE '%$search%' ORDER BY id DESC  ");
+          $stmt=$pdo->prepare("SELECT * FROM posts   WHERE title LIKE '%$search%' LIMIT $offset,$numofrecs   ");
           $stmt->execute();
            $result=$stmt->fetchAll();
       
@@ -62,8 +74,8 @@
                   <thead>
                     <tr>
                       <th style="width: 10px">Id</th>
-                      <th>Title</th>
-                      <th>Content</th>
+                      <th style="width: 600px">Title</th>
+                      <th >Content</th>
                       <th style="width: 160px">Action</th>
                     </tr>
                   </thead>
@@ -77,7 +89,7 @@
                         <tr>
                         <td><?php echo $i; ?></td>
                         <td><?php echo escape($value['title']); ?></td>
-                        <td><?php echo escape(substr($value['content'],0,50)); ?>
+                        <td><?php echo substr(escape($value['content']),0,200)."..."; ?>
                         </td>
                         <td>
                           <a href='edit.php?id=<?php echo escape($value['id']); ?>' type='button' class='btn btn-warning'>Edit</a> 

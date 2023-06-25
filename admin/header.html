@@ -43,6 +43,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             $page=end($link);
           ?>
           <form class="form-inline" method="post" action="<?php echo $page=='index.php'?'index.php':'user.php'; ?>">
+            <input type="hidden" name="_token" value="<?php echo $_SESSION['_token'];?>">
             <div class="input-group input-group-sm">
               <input class="form-control form-control-navbar" name="search" type="search" placeholder="Search" aria-label="Search">
               <div class="input-group-append">

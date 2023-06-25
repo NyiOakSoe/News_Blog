@@ -5,6 +5,17 @@
   if(empty($_SESSION['user_id'])){
     header('location:login.php');
   };
+  if(isset($_POST['search'])){
+    setcookie('search',$_POST['search'],time()+(3600*24),"/");
+    
+  }else{
+    if(empty($_GET['pageno'])){
+      unset($_COOKIE['search']);
+      setcookie('search',null,-1,'/');
+      
+    }
+  }
+  
 ?>
 <?php
   include ('header.html');
@@ -13,7 +24,7 @@
     <!-- /.content-header -->
     <?php
       
-        if(!empty($_GET['pageno'])){
+        if(!empty($_GET['pageno']) ){
           $pageno=$_GET['pageno'];
         }else{
           $pageno=1;
@@ -21,30 +32,41 @@
         $numofrecs=2;
         $offset=($pageno -1) * $numofrecs;
   
-        if(empty($_POST['search'])){
-      $stmt=$pdo->prepare("SELECT * FROM users ");
-      $stmt->execute();
-      $row_result=$stmt->fetchAll();
-      $total_page=ceil(count($row_result) / $numofrecs);
-  
-      $stmt=$pdo->prepare("SELECT * FROM users ORDER BY id DESC LIMIT $offset,$numofrecs ");
-      $stmt->execute();
-      $result=$stmt->fetchAll();
-      
-      $result_role=[];
-      foreach($result as $key => $value){
-        $role=$result[$key]['role'];
-        $stmt_role=$pdo->prepare("SELECT * FROM users WHERE role=$role");
-        $stmt_role->execute();
-        $result_role[]=$stmt_role->fetchAll();
-      }
+      if(empty($_POST['search']) && empty($_COOKIE['search'])){
+            $stmt=$pdo->prepare("SELECT * FROM users ");
+            $stmt->execute();
+            $row_result=$stmt->fetchAll();
+            $total_page=ceil(count($row_result) / $numofrecs);
+        
+            $stmt=$pdo->prepare("SELECT * FROM users ORDER BY id DESC LIMIT $offset,$numofrecs ");
+            $stmt->execute();
+            $result=$stmt->fetchAll();
+            
+            $result_role=[];
+            foreach($result as $key => $value){
+              $role=$result[$key]['role'];
+              $stmt_role=$pdo->prepare("SELECT * FROM users WHERE role=$role");
+              $stmt_role->execute();
+              $result_role[]=$stmt_role->fetchAll();
+            }
       
             
-      }else{          
-          $search=$_POST['search'];            
+      }else{  
+                 
+          if(isset($_POST['search'])){
+            $search=$_POST['search'];
+          }else{
+            $search=$_COOKIE['search'];
+          }
           $stmt=$pdo->prepare("SELECT * FROM users WHERE name LIKE '%$search%'   ORDER BY id DESC   ");
           $stmt->execute();
-           $result=$stmt->fetchAll();
+           $row_result=$stmt->fetchAll();
+
+          $total_page=ceil(count($row_result) / $numofrecs);
+          $stmt=$pdo->prepare("SELECT * FROM users   WHERE name LIKE '%$search%' LIMIT $offset,$numofrecs   ");
+          $stmt->execute();
+          $result=$stmt->fetchAll(); 
+
            $result_role=[];
           foreach($result as $key => $value){
             $role=$result[$key]['role'];

@@ -83,13 +83,12 @@
         <div class="row">
             <div class="col-md-6" style="margin:auto !important">
                 <div class="card"   >
-                    
                     <div class="card-body">
                     <div>
                     <center><h4>Account Edit</h4></center>
                     </div>
                         <form  method="post" enctype="multipart/form-data">
-                        
+                        <input type="hidden" name="_token" value="<?php echo $_SESSION['_token'];?>">
                             <div class="form-group">
                                 <label for="">Name</label>
                                 <input type="text" name="name" class="form-control" id=""  value="<?php echo escape($result[0]['name']);?>">
